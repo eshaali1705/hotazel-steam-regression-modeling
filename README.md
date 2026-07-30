@@ -1,5 +1,3 @@
-# hotazel-steam-regression-modeling
-Exploratory data analysis and regression modeling of Hotazel Steam's revenue. Includes simple linear regression on production, multiple regression adding heating degree days (heatDD), and percentage-error evaluation of both models on test data.
 # Hotazel Steam Regression Modeling
 
 Exploratory data analysis and regression modeling of Hotazel Steam's revenue, moving from data understanding through a simple linear regression model to a multiple regression model that incorporates heating degree days (heatDD).
