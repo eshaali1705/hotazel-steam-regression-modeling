@@ -82,4 +82,4 @@ Based on a prior run of this modeling logic:
 Eshaal Iqbal
 
 ---
-*This README was generated from the cell code and markdown in `Hotazel_Steam_Regression_Modeling_cleaned.ipynb`.*
+*This README was generated from the cell code and markdown in `Hotazel_Steam_Regression_Modeling.ipynb`.*
