@@ -1,17 +1,10 @@
-# Hotazel Steam Regression Modeling
+# Hotazel Steam: Revenue Forecasting Analysis
 
-Exploratory data analysis and regression modeling of Hotazel Steam's revenue, moving from data understanding through a simple linear regression model to a multiple regression model that incorporates heating degree days (heatDD).
+A Google Colab notebook that builds and compares five regression models to forecast Hotazel Steam's monthly revenue, using production volume, weather (heating/cooling degree days), and seasonal indicators as predictors.
 
-## Overview
+## Business Question
 
-This notebook walks through a full regression workflow:
-
-1. **Data understanding & prep** — load and inspect the dataset
-2. **Visualization** — revenue trends over time, heating vs. cooling usage, revenue vs. production
-3. **Correlation analysis** — relationships between revenue, production, coolDD, and heatDD
-4. **Simple linear regression** — revenue predicted from production alone
-5. **Multiple regression** — revenue predicted from production + heatDD
-6. **Evaluation** — percentage error on a held-out test set, with visual comparison of actual vs. predicted revenue
+Hotazel Steam wants a reliable way to forecast monthly revenue using operating data (production volume) and weather-driven demand (heating/cooling degree days). This notebook tests models of increasing complexity to find the one that predicts revenue most accurately on unseen data.
 
 ## Data
 
@@ -19,7 +12,7 @@ The notebook reads from a CSV file that must be present in the Colab runtime:
 
 - `AICPA_regressionAnalysisData.csv`
 
-Columns used include:
+Columns used:
 - `date`
 - `production`
 - `coolDD` (cooling degree days)
@@ -27,50 +20,35 @@ Columns used include:
 - `revenue`
 - `type` (`dt4training` or `dt4testing`)
 
-**Note:** the CSV is not bundled in the notebook file itself — it needs to be uploaded to the Colab session (or mounted from Drive) before running.
+**Note:** the CSV is not bundled in the notebook file itself — upload it to the Colab session (or mount from Drive) before running.
 
-## Correlation Analysis
+## Models Covered
 
-| | revenue | production | coolDD | heatDD |
-|---|---|---|---|---|
-| revenue | 1.000 | 0.632 | -0.169 | 0.687 |
-| production | 0.632 | 1.000 | 0.509 | 0.032 |
-| coolDD | -0.169 | 0.509 | 1.000 | -0.717 |
-| heatDD | 0.687 | 0.032 | -0.717 | 1.000 |
+| # | Model | Predictors |
+|---|---|---|
+| 1 | Simple Linear Regression | `production` |
+| 2 | Multiple Regression | `production`, `heatDD` |
+| 3 | Winter Dummy Variable | `production`, `winter` |
+| 4 | Winter + Summer Dummy Variables | `production`, `winter`, `summer` |
+| 5 | Winter × Production Interaction | `production`, `winter`, `winter_interaction` |
 
-`heatDD` and `production` both show a stronger positive correlation with revenue than `coolDD` does, motivating their use in the models below.
-
-## Models
-
-### Model 1: Simple Linear Regression (Production only)
-```
-Revenue = 4,897,663.26 + 18.99 × Production
-```
-- R² = 0.397, Adj. R² = 0.379
-- Interpretation used in the notebook: a one-unit (1,000 lb) increase in production is associated with a $18.99 increase in revenue.
-- **Mean percentage error on test set ≈ 25.42%**
-
-### Model 2: Multiple Regression (Production + heatDD)
-```
-Revenue = 727,257.88 + 20.00 × Production + 10,484.05 × heatDD
-```
-- R² = 0.867, Adj. R² = 0.859
-- **Mean percentage error on test set ≈ 13.86%**
-
-### Conclusion (from the notebook's own write-up)
-The notebook concludes that the predicted-vs-actual revenue plot supports the adjusted R² and error results: adding `heatDD` closely tracks actual revenue and meaningfully improves predictive accuracy over the simple linear model, making the multiple regression model the more reliable forecaster of the two.
+Each model is fit on `dt4training` and evaluated on `dt4testing` using mean absolute percentage error (MAPE), with matching visualizations (actual vs. predicted revenue, or trend lines by season).
 
 ## Notebook Structure
 
 | Section | Content |
 |---|---|
-| Understanding and Prepping Data | Load CSV, inspect head/tail/info |
-| Visualizing Monthly Revenue | Revenue-over-time plot; heating vs. cooling usage split; revenue vs. production scatterplot |
-| Correlation Analysis | Correlation matrix across revenue, production, coolDD, heatDD |
-| Training vs Testing Data | Split into `dt4training` / `dt4testing` |
-| Simple Linear Regression | Fit OLS (revenue ~ production), summary, coefficients |
-| Evaluation and Communication | Predict on test set, compute percentage error, visualize actual vs. predicted |
-| Multiple Regression | Fit OLS (revenue ~ production + heatDD), summary, coefficients, evaluation, visualization |
+| 1. Setup | Imports, float display formatting |
+| 2. Load and Inspect the Data | Read CSV, parse dates, check for missing values |
+| 3. Visualizing Monthly Revenue | Revenue over time; heating vs. cooling split; revenue vs. production |
+| 4. Correlation Analysis | Correlation matrix across revenue, production, coolDD, heatDD |
+| 5. Training vs. Testing Data | Split into `train_df` / `test_df` |
+| 6. Model 1: Simple Linear Regression | Fit, coefficients, test-set MAPE, actual-vs-predicted plot |
+| 7. Model 2: Multiple Regression | Fit, coefficients, test-set MAPE, comparison plot, residual check |
+| 8. Model 3: Winter Dummy Variable | Add season flags, fit, test-set MAPE, winter/non-winter trend lines |
+| 9. Model 4: Winter + Summer Dummy Variables | Fit, three-way trend line plot |
+| 10. Model 5: Winter × Production Interaction | Fit with interaction term, winter/non-winter trend lines |
+| 11. Summary of Results | Computed MAPE comparison table + written takeaway |
 
 ## Dependencies
 
@@ -88,8 +66,22 @@ These are pre-installed in the standard Google Colab environment, so no manual i
 
 1. Open the notebook in Google Colab.
 2. Upload `AICPA_regressionAnalysisData.csv` to the Colab session (or adjust the `pd.read_csv(...)` path if using Drive).
-3. Run all cells in order.
-4. Review the OLS summaries, percentage error outputs, and the actual-vs-predicted plots to compare the simple and multiple regression models.
+3. **Run all cells in order, top to bottom** (Runtime → Run all). The Section 11 summary table depends on variables (`mape_simple`, `mape_multi`, `mape_winter`) created earlier in the notebook — running out of order or restarting the runtime partway through will cause a `NameError` there.
+4. Review each model's OLS summary, MAPE output, and plots, then check the Section 11 summary table for the side-by-side comparison.
+
+## Known Results (from a prior verified run of this same modeling logic)
+
+I have not executed this exact notebook file myself, so I can't confirm these numbers directly from it — but they come from an earlier run of the same underlying code:
+
+- Model 1 (Simple Linear Regression): MAPE ≈ 25.4%
+- Model 2 (Multiple Regression): MAPE ≈ 13.9%
+- Model 3 (Winter Dummy Variable): MAPE ≈ 15.9%
+
+You should re-run the notebook yourself to confirm these hold for your current data and code.
+
+## Author
+
+Eshaal Iqbal
 
 ---
-*This README was generated by inspecting the actual cell code, markdown notes, and stored output values (correlation matrix, OLS summaries, coefficients, and percentage error figures) in `Hotazel_Steam_Regression_Modeling.ipynb`. If any cells have been re-run or edited since this file was uploaded, you may want to re-check the figures above against the current notebook state.*
+*This README was generated by inspecting the actual cell code and markdown in `Hotazel_Steam_Regression_Modeling_cleaned.ipynb`. Since the notebook's code cells haven't been executed in this environment, any numeric results above should be verified by running the notebook yourself.*
